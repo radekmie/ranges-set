@@ -1,0 +1,53 @@
+{
+  "name": "ranges-set",
+  "version": "1.0.0",
+  "description": "Set operations on human-friendly ranges.",
+  "license": "MIT",
+  "repository": "radekmie/ranges-set",
+  "author": "Radosław Miernik <radekmie@gmail.com>",
+  "main": "index.js",
+  "exports": "index.modern.js",
+  "module": "index.module.js",
+  "source": "index.ts",
+  "sideEffects": false,
+  "keywords": [
+    "human",
+    "friendly",
+    "range",
+    "set",
+    "util"
+  ],
+  "scripts": {
+    "build": "microbundle --format cjs,es,modern",
+    "coverage": "nyc --reporter lcov --reporter text npm test",
+    "lint": "eslint --ignore-path .gitignore .",
+    "test": "ava"
+  },
+  "devDependencies": {
+    "ava": "3.15.0",
+    "eslint-config-vazco": "6.1.0",
+    "microbundle": "0.13.0",
+    "nyc": "15.1.0",
+    "ts-node": "9.1.1"
+  },
+  "ava": {
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
+  },
+  "eslintConfig": {
+    "extends": "vazco/typescript",
+    "rules": {
+      "@typescript-eslint/switch-exhaustiveness-check": "error",
+      "consistent-return": "off"
+    },
+    "settings": {
+      "react": {
+        "version": "none"
+      }
+    }
+  }
+}
