@@ -1,6 +1,6 @@
 {
   "name": "ranges-set",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Set operations on human-friendly ranges.",
   "license": "MIT",
   "repository": "radekmie/ranges-set",
