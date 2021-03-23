@@ -39,6 +39,26 @@ function differenceReprs(reprsA: Repr[], reprsB: Repr[]): Repr[] {
               continue loop;
             }
 
+            if (reprA.min <= reprB.min && reprA.max >= reprB.max) {
+              if (reprA.max > reprB.max) {
+                reprsA.splice(indexA + 1, 0, {
+                  kind: KindRange,
+                  min: reprB.max + 1,
+                  max: reprA.max,
+                });
+              }
+
+              if (reprA.min < reprB.min) {
+                reprsA.splice(indexA + 1, 0, {
+                  kind: KindRange,
+                  min: reprA.min,
+                  max: reprB.min - 1,
+                });
+              }
+
+              continue loop;
+            }
+
             if (reprA.min >= reprB.min && reprA.min <= reprB.max) {
               reprA.min = reprB.max + 1;
             } else if (reprA.max >= reprB.min && reprA.max <= reprB.max) {
