@@ -9,8 +9,8 @@ const numberPattern = /^\s*(?:0|[1-9]\d*)\s*$/;
 const rangePattern = /^\s*(0|[1-9]\d*)\s*-\s*(0|[1-9]\d*)\s*$/;
 
 export function difference(textA: string, textB: string): string {
-  const reprsA = unionReprs(parse(textA));
-  const reprsB = unionReprs(parse(textB));
+  const reprsA = parse(textA);
+  const reprsB = parse(textB);
   const reprs = differenceReprs(reprsA, reprsB);
   return serialize(reprs);
 }
@@ -76,7 +76,7 @@ function differenceReprs(reprsA: Repr[], reprsB: Repr[]): Repr[] {
 }
 
 export function expand(text: string): string[] {
-  const reprs = unionReprs(parse(text));
+  const reprs = parse(text);
   return expandReprs(reprs);
 }
 
@@ -101,8 +101,8 @@ function expandReprs(reprs: Repr[]): string[] {
 }
 
 export function intersection(textA: string, textB: string): string {
-  const reprsA = unionReprs(parse(textA));
-  const reprsB = unionReprs(parse(textB));
+  const reprsA = parse(textA);
+  const reprsB = parse(textB);
   const reprs = intersectionReprs(reprsA, reprsB);
   return serialize(reprs);
 }
@@ -140,7 +140,7 @@ function intersectionReprs(reprsA: Repr[], reprsB: Repr[]): Repr[] {
 }
 
 export function normalize(text: string): string {
-  const reprs = unionReprs(parse(text));
+  const reprs = parse(text);
   return serialize(reprs);
 }
 
@@ -161,7 +161,7 @@ function order(reprA: Repr, reprB: Repr): number {
 }
 
 function parse(text: string): Repr[] {
-  return text.split(',').filter(Boolean).map(parseOne);
+  return unionReprs(text.split(',').filter(Boolean).map(parseOne));
 }
 
 function parseOne(text: string): Repr {
@@ -191,8 +191,8 @@ function serializeOne(repr: Repr): string {
 }
 
 export function subset(textA: string, textB: string): boolean {
-  const reprsA = unionReprs(parse(textA));
-  const reprsB = unionReprs(parse(textB));
+  const reprsA = parse(textA);
+  const reprsB = parse(textB);
   return subsetReprs(reprsA, reprsB);
 }
 
@@ -229,9 +229,7 @@ function subsetReprs(reprsA: Repr[], reprsB: Repr[]): boolean {
 }
 
 export function union(textA: string, textB: string): string {
-  const reprsA = unionReprs(parse(textA));
-  const reprsB = unionReprs(parse(textB));
-  const reprs = unionReprs(reprsA.concat(reprsB));
+  const reprs = parse(textA + ',' + textB);
   return serialize(reprs);
 }
 
