@@ -1,6 +1,14 @@
 import test from 'ava';
 
-import { difference, expand, intersection, normalize, subset, union } from '.';
+import {
+  difference,
+  equal,
+  expand,
+  intersection,
+  normalize,
+  subset,
+  union,
+} from '.';
 
 function test1<A, B>(fn: (a: A) => B, tests: [A, B][]) {
   for (const [a, b] of tests) {
@@ -48,6 +56,39 @@ test2(difference, [
   ['b', 'a', 'b'],
   ['b,1', 'a,1', 'b'],
   ['b,2', 'a,1', 'b,2'],
+]);
+
+test2(equal, [
+  ['1', '1', true],
+  ['1', '1-2', false],
+  ['1', '2', false],
+  ['1', '2-100', false],
+  ['1', '3', false],
+  ['1,5', '1-5', false],
+  ['1-2', '1', false],
+  ['1-2', '1-2', true],
+  ['1-2', '2', false],
+  ['1-2,3,4-5', '1-5', true],
+  ['1-2,4-5', '1-5', false],
+  ['1-3', '2-4', false],
+  ['1-5', '1,5', false],
+  ['1-5', '1-2,4-5', false],
+  ['1-6', '1,3,6', false],
+  ['1-6', '1,4', false],
+  ['1-6', '1,6', false],
+  ['1-6', '2,4', false],
+  ['1-6', '2-5', false],
+  ['2', '1', false],
+  ['2-100', '1', false],
+  ['2-4', '1-3', false],
+  ['3', '1', false],
+  ['a', 'a', true],
+  ['a', 'b', false],
+  ['a,1', 'b,1', false],
+  ['a,1', 'b,2', false],
+  ['b', 'a', false],
+  ['b,1', 'a,1', false],
+  ['b,2', 'a,1', false],
 ]);
 
 test1(expand, [

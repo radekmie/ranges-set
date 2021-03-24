@@ -8,6 +8,26 @@ type ReprRange = { kind: typeof KindRange; min: number; max: number };
 const numberPattern = /^\s*(?:0|[1-9]\d*)\s*$/;
 const rangePattern = /^\s*(0|[1-9]\d*)\s*-\s*(0|[1-9]\d*)\s*$/;
 
+function compare(reprA: Repr, reprB: Repr): number {
+  if (reprA.kind !== reprB.kind) {
+    return reprA.kind - reprB.kind;
+  }
+
+  switch (reprA.kind) {
+    case KindLiteral:
+      return reprA.text >= (reprB as ReprLiteral).text
+        ? reprA.text > (reprB as ReprLiteral).text
+          ? 1
+          : 0
+        : -1;
+    case KindRange:
+      return (
+        reprA.min - (reprB as ReprRange).min ||
+        reprA.max - (reprB as ReprRange).max
+      );
+  }
+}
+
 export function difference(textA: string, textB: string): string {
   const reprsA = parse(textA);
   const reprsB = parse(textB);
@@ -73,6 +93,26 @@ function differenceReprs(reprsA: Repr[], reprsB: Repr[]): Repr[] {
   }
 
   return reprs;
+}
+
+export function equal(textA: string, textB: string): boolean {
+  const reprsA = parse(textA);
+  const reprsB = parse(textB);
+  return equalReprs(reprsA, reprsB);
+}
+
+function equalReprs(reprsA: Repr[], reprsB: Repr[]): boolean {
+  if (reprsA.length !== reprsB.length) {
+    return false;
+  }
+
+  for (let index = 0; index < reprsA.length; ++index) {
+    if (compare(reprsA[index], reprsB[index]) !== 0) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 export function expand(text: string): string[] {
@@ -142,22 +182,6 @@ function intersectionReprs(reprsA: Repr[], reprsB: Repr[]): Repr[] {
 export function normalize(text: string): string {
   const reprs = parse(text);
   return serialize(reprs);
-}
-
-function order(reprA: Repr, reprB: Repr): number {
-  if (reprA.kind !== reprB.kind) {
-    return reprA.kind - reprB.kind;
-  }
-
-  switch (reprA.kind) {
-    case KindLiteral:
-      return reprA.text < (reprB as ReprLiteral).text ? -1 : 1;
-    case KindRange:
-      return (
-        reprA.min - (reprB as ReprRange).min ||
-        reprA.max - (reprB as ReprRange).max
-      );
-  }
 }
 
 function parse(text: string): Repr[] {
@@ -269,5 +293,5 @@ function unionReprReducer(reprs: Repr[], repr: Repr): Repr[] {
 }
 
 function unionReprs(reprs: Repr[]): Repr[] {
-  return reprs.sort(order).reduce(unionReprReducer, []);
+  return reprs.sort(compare).reduce(unionReprReducer, []);
 }

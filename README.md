@@ -17,9 +17,10 @@ That is why `ranges-set` operates on actual _ranges_, resulting in performance s
 ## Usage
 
 ```ts
-import { difference, expand, intersection, normalize, subset, union } from 'ranges-set';
+import { difference, equal, expand, intersection, normalize, subset, union } from 'ranges-set';
 
 difference('1-4', '2-3'); // '1,4'
+equal('1-3', '1-2'); // false
 expand('1-3,5-7'); // ['1', '2', '3', '5', '6', '7']
 intersection('1-10', '5-10'); // '5-10'
 normalize('1,2,3,5,6-8'); // '1-3,5-8'
@@ -31,6 +32,7 @@ union('1-60,40-100'); // '1-100'
 
 ```ts
 function difference(textA: string, textB: string): string;
+function equal(textA: string, textB: string): boolean;
 function expand(text: string): string[];
 function intersection(textA: string, textB: string): string;
 function normalize(text: string): string;
