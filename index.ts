@@ -16,15 +16,6 @@ type MReprRange = { kind: Kind.Range; min: number; max: number };
 const numberPattern = /^\s*(?:0|[1-9]\d*)\s*$/;
 const rangePattern = /^\s*(0|[1-9]\d*)\s*-\s*(0|[1-9]\d*)\s*$/;
 
-function cloneRepr(repr: IRepr): MRepr {
-  switch (repr.kind) {
-    case Kind.Literal:
-      return { kind: Kind.Literal, text: repr.text };
-    case Kind.Range:
-      return { kind: Kind.Range, min: repr.min, max: repr.max };
-  }
-}
-
 function compare(reprA: IRepr, reprB: IRepr): number {
   if (reprA.kind !== reprB.kind) {
     return reprA.kind - reprB.kind;
@@ -164,7 +155,7 @@ export function intersection(textA: string, textB: string): string {
   return serialize(reprs);
 }
 
-function intersectionRepr(reprA: IRepr, reprB: IRepr): MRepr | null {
+function intersectionRepr(reprA: MRepr, reprB: IRepr): MRepr | null {
   if (reprA.kind !== reprB.kind) {
     return null;
   }
@@ -180,7 +171,7 @@ function intersectionRepr(reprA: IRepr, reprB: IRepr): MRepr | null {
   }
 }
 
-function intersectionReprs(reprsA: IReprs, reprsB: IReprs): MReprs {
+function intersectionReprs(reprsA: MReprs, reprsB: IReprs): MReprs {
   const reprs: MReprs = [];
   for (let indexA = 0; indexA < reprsA.length; ++indexA) {
     const reprA = reprsA[indexA];
@@ -188,7 +179,7 @@ function intersectionReprs(reprsA: IReprs, reprsB: IReprs): MReprs {
       const reprB = reprsB[indexB];
       const repr = intersectionRepr(reprA, reprB);
       if (repr !== null) {
-        reprs.push(cloneRepr(repr));
+        reprs.push(repr);
       }
     }
   }
@@ -301,9 +292,9 @@ function unionRepr(reprA: MRepr, reprB: IRepr): boolean {
   }
 }
 
-function unionReprReducer(reprs: MReprs, repr: IRepr): MReprs {
+function unionReprReducer(reprs: MReprs, repr: MRepr): MReprs {
   if (reprs.length === 0 || !unionRepr(reprs[reprs.length - 1], repr)) {
-    reprs.push(cloneRepr(repr));
+    reprs.push(repr);
   }
 
   return reprs;
