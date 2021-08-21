@@ -1,9 +1,11 @@
-const KindLiteral = 0;
-const KindRange = 1;
+const enum Kind {
+  Literal = 0,
+  Range = 1,
+}
 
 type Repr = ReprLiteral | ReprRange;
-type ReprLiteral = { kind: typeof KindLiteral; text: string };
-type ReprRange = { kind: typeof KindRange; min: number; max: number };
+type ReprLiteral = { kind: Kind.Literal; text: string };
+type ReprRange = { kind: Kind.Range; min: number; max: number };
 
 const numberPattern = /^\s*(?:0|[1-9]\d*)\s*$/;
 const rangePattern = /^\s*(0|[1-9]\d*)\s*-\s*(0|[1-9]\d*)\s*$/;
@@ -14,13 +16,13 @@ function compare(reprA: Repr, reprB: Repr): number {
   }
 
   switch (reprA.kind) {
-    case KindLiteral:
+    case Kind.Literal:
       return reprA.text >= (reprB as ReprLiteral).text
         ? reprA.text > (reprB as ReprLiteral).text
           ? 1
           : 0
         : -1;
-    case KindRange:
+    case Kind.Range:
       return (
         reprA.min - (reprB as ReprRange).min ||
         reprA.max - (reprB as ReprRange).max
@@ -41,20 +43,20 @@ function differenceReprs(reprsA: Repr[], reprsB: Repr[]): Repr[] {
   loop: for (let indexA = 0; indexA < reprsA.length; ++indexA) {
     const reprA = reprsA[indexA];
     switch (reprA.kind) {
-      case KindLiteral:
+      case Kind.Literal:
         for (let indexB = 0; indexB < reprsB.length; ++indexB) {
           const reprB = reprsB[indexB];
-          if (reprB.kind === KindLiteral && reprB.text === reprA.text) {
+          if (reprB.kind === Kind.Literal && reprB.text === reprA.text) {
             continue loop;
           }
         }
 
         reprs.push(reprA);
         break;
-      case KindRange:
+      case Kind.Range:
         for (let indexB = 0; indexB < reprsB.length; ++indexB) {
           const reprB = reprsB[indexB];
-          if (reprB.kind === KindRange) {
+          if (reprB.kind === Kind.Range) {
             if (reprA.min >= reprB.min && reprA.max <= reprB.max) {
               continue loop;
             }
@@ -62,7 +64,7 @@ function differenceReprs(reprsA: Repr[], reprsB: Repr[]): Repr[] {
             if (reprA.min <= reprB.min && reprA.max >= reprB.max) {
               if (reprA.max > reprB.max) {
                 reprsA.splice(indexA + 1, 0, {
-                  kind: KindRange,
+                  kind: Kind.Range,
                   min: reprB.max + 1,
                   max: reprA.max,
                 });
@@ -70,7 +72,7 @@ function differenceReprs(reprsA: Repr[], reprsB: Repr[]): Repr[] {
 
               if (reprA.min < reprB.min) {
                 reprsA.splice(indexA + 1, 0, {
-                  kind: KindRange,
+                  kind: Kind.Range,
                   min: reprA.min,
                   max: reprB.min - 1,
                 });
@@ -125,10 +127,10 @@ function expandReprs(reprs: Repr[]): string[] {
   for (let index = 0; index < reprs.length; ++index) {
     const repr = reprs[index];
     switch (repr.kind) {
-      case KindLiteral:
+      case Kind.Literal:
         texts.push(repr.text);
         break;
-      case KindRange: {
+      case Kind.Range: {
         for (let index = repr.min; index <= repr.max; ++index) {
           texts.push(`${index}`);
         }
@@ -153,12 +155,12 @@ function intersectionRepr(reprA: Repr, reprB: Repr): Repr | null {
   }
 
   switch (reprA.kind) {
-    case KindLiteral:
+    case Kind.Literal:
       return reprA.text === (reprB as ReprLiteral).text ? reprA : null;
-    case KindRange: {
+    case Kind.Range: {
       const min = Math.max(reprA.min, (reprB as ReprRange).min);
       const max = Math.min(reprA.max, (reprB as ReprRange).max);
-      return min > max ? null : { kind: KindRange, min, max };
+      return min > max ? null : { kind: Kind.Range, min, max };
     }
   }
 }
@@ -190,15 +192,15 @@ function parse(text: string): Repr[] {
 
 function parseOne(text: string): Repr {
   if (numberPattern.test(text)) {
-    return { kind: KindRange, min: +text, max: +text };
+    return { kind: Kind.Range, min: +text, max: +text };
   }
 
   const rangeMatch = rangePattern.exec(text);
   if (rangeMatch) {
-    return { kind: KindRange, min: +rangeMatch[1], max: +rangeMatch[2] };
+    return { kind: Kind.Range, min: +rangeMatch[1], max: +rangeMatch[2] };
   }
 
-  return { kind: KindLiteral, text };
+  return { kind: Kind.Literal, text };
 }
 
 function serialize(reprs: Repr[]): string {
@@ -207,9 +209,9 @@ function serialize(reprs: Repr[]): string {
 
 function serializeOne(repr: Repr): string {
   switch (repr.kind) {
-    case KindLiteral:
+    case Kind.Literal:
       return repr.text;
-    case KindRange:
+    case Kind.Range:
       return repr.min === repr.max ? `${repr.min}` : `${repr.min}-${repr.max}`;
   }
 }
@@ -224,20 +226,20 @@ function subsetReprs(reprsA: Repr[], reprsB: Repr[]): boolean {
   loop: for (let indexB = 0; indexB < reprsB.length; ++indexB) {
     const reprB = reprsB[indexB];
     switch (reprB.kind) {
-      case KindLiteral:
+      case Kind.Literal:
         for (let indexA = 0; indexA < reprsA.length; ++indexA) {
           const reprA = reprsA[indexA];
-          if (reprA.kind === KindLiteral && reprA.text === reprB.text) {
+          if (reprA.kind === Kind.Literal && reprA.text === reprB.text) {
             continue loop;
           }
         }
 
         return false;
-      case KindRange:
+      case Kind.Range:
         for (let indexA = 0; indexA < reprsA.length; ++indexA) {
           const reprA = reprsA[indexA];
           if (
-            reprA.kind === KindRange &&
+            reprA.kind === Kind.Range &&
             reprB.min >= reprA.min &&
             reprB.max <= reprA.max
           ) {
@@ -263,11 +265,11 @@ function unionRepr(reprA: Repr, reprB: Repr): boolean {
   }
 
   switch (reprA.kind) {
-    case KindLiteral: {
+    case Kind.Literal: {
       const same = reprA.text === (reprB as ReprLiteral).text;
       return same;
     }
-    case KindRange: {
+    case Kind.Range: {
       const unionable =
         (reprA.min <= (reprB as ReprRange).max + 1 &&
           reprA.max >= (reprB as ReprRange).min) ||
