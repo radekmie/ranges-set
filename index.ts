@@ -3,29 +3,44 @@ const enum Kind {
   Range = 1,
 }
 
-type Repr = ReprLiteral | ReprRange;
-type ReprLiteral = { kind: Kind.Literal; text: string };
-type ReprRange = { kind: Kind.Range; min: number; max: number };
+type IRepr = IReprLiteral | IReprRange;
+type IReprs = readonly IRepr[];
+type IReprLiteral = Readonly<MReprLiteral>;
+type IReprRange = Readonly<MReprRange>;
+
+type MRepr = MReprLiteral | MReprRange;
+type MReprs = MRepr[];
+type MReprLiteral = { kind: Kind.Literal; text: string };
+type MReprRange = { kind: Kind.Range; min: number; max: number };
 
 const numberPattern = /^\s*(?:0|[1-9]\d*)\s*$/;
 const rangePattern = /^\s*(0|[1-9]\d*)\s*-\s*(0|[1-9]\d*)\s*$/;
 
-function compare(reprA: Repr, reprB: Repr): number {
+function cloneRepr(repr: IRepr): MRepr {
+  switch (repr.kind) {
+    case Kind.Literal:
+      return { kind: Kind.Literal, text: repr.text };
+    case Kind.Range:
+      return { kind: Kind.Range, min: repr.min, max: repr.max };
+  }
+}
+
+function compare(reprA: IRepr, reprB: IRepr): number {
   if (reprA.kind !== reprB.kind) {
     return reprA.kind - reprB.kind;
   }
 
   switch (reprA.kind) {
     case Kind.Literal:
-      return reprA.text >= (reprB as ReprLiteral).text
-        ? reprA.text > (reprB as ReprLiteral).text
+      return reprA.text >= (reprB as IReprLiteral).text
+        ? reprA.text > (reprB as IReprLiteral).text
           ? 1
           : 0
         : -1;
     case Kind.Range:
       return (
-        reprA.min - (reprB as ReprRange).min ||
-        reprA.max - (reprB as ReprRange).max
+        reprA.min - (reprB as IReprRange).min ||
+        reprA.max - (reprB as IReprRange).max
       );
   }
 }
@@ -38,8 +53,8 @@ export function difference(textA: string, textB: string): string {
 }
 
 // eslint-disable-next-line complexity
-function differenceReprs(reprsA: Repr[], reprsB: Repr[]): Repr[] {
-  const reprs: Repr[] = [];
+function differenceReprs(reprsA: MReprs, reprsB: IReprs): MReprs {
+  const reprs: MReprs = [];
   loop: for (let indexA = 0; indexA < reprsA.length; ++indexA) {
     const reprA = reprsA[indexA];
     switch (reprA.kind) {
@@ -103,7 +118,7 @@ export function equal(textA: string, textB: string): boolean {
   return equalReprs(reprsA, reprsB);
 }
 
-function equalReprs(reprsA: Repr[], reprsB: Repr[]): boolean {
+function equalReprs(reprsA: IReprs, reprsB: IReprs): boolean {
   if (reprsA.length !== reprsB.length) {
     return false;
   }
@@ -122,7 +137,7 @@ export function expand(text: string): string[] {
   return expandReprs(reprs);
 }
 
-function expandReprs(reprs: Repr[]): string[] {
+function expandReprs(reprs: IReprs): string[] {
   const texts: string[] = [];
   for (let index = 0; index < reprs.length; ++index) {
     const repr = reprs[index];
@@ -149,31 +164,31 @@ export function intersection(textA: string, textB: string): string {
   return serialize(reprs);
 }
 
-function intersectionRepr(reprA: Repr, reprB: Repr): Repr | null {
+function intersectionRepr(reprA: IRepr, reprB: IRepr): MRepr | null {
   if (reprA.kind !== reprB.kind) {
     return null;
   }
 
   switch (reprA.kind) {
     case Kind.Literal:
-      return reprA.text === (reprB as ReprLiteral).text ? reprA : null;
+      return reprA.text === (reprB as IReprLiteral).text ? reprA : null;
     case Kind.Range: {
-      const min = Math.max(reprA.min, (reprB as ReprRange).min);
-      const max = Math.min(reprA.max, (reprB as ReprRange).max);
+      const min = Math.max(reprA.min, (reprB as IReprRange).min);
+      const max = Math.min(reprA.max, (reprB as IReprRange).max);
       return min > max ? null : { kind: Kind.Range, min, max };
     }
   }
 }
 
-function intersectionReprs(reprsA: Repr[], reprsB: Repr[]): Repr[] {
-  const reprs: Repr[] = [];
+function intersectionReprs(reprsA: IReprs, reprsB: IReprs): MReprs {
+  const reprs: MReprs = [];
   for (let indexA = 0; indexA < reprsA.length; ++indexA) {
     const reprA = reprsA[indexA];
     for (let indexB = 0; indexB < reprsB.length; ++indexB) {
       const reprB = reprsB[indexB];
       const repr = intersectionRepr(reprA, reprB);
       if (repr !== null) {
-        reprs.push(repr);
+        reprs.push(cloneRepr(repr));
       }
     }
   }
@@ -186,11 +201,11 @@ export function normalize(text: string): string {
   return serialize(reprs);
 }
 
-function parse(text: string): Repr[] {
+function parse(text: string): MReprs {
   return unionReprs(text.split(',').filter(Boolean).map(parseOne));
 }
 
-function parseOne(text: string): Repr {
+function parseOne(text: string): MRepr {
   if (numberPattern.test(text)) {
     return { kind: Kind.Range, min: +text, max: +text };
   }
@@ -203,11 +218,11 @@ function parseOne(text: string): Repr {
   return { kind: Kind.Literal, text };
 }
 
-function serialize(reprs: Repr[]): string {
+function serialize(reprs: IReprs): string {
   return reprs.map(serializeOne).join();
 }
 
-function serializeOne(repr: Repr): string {
+function serializeOne(repr: IRepr): string {
   switch (repr.kind) {
     case Kind.Literal:
       return repr.text;
@@ -222,7 +237,7 @@ export function subset(textA: string, textB: string): boolean {
   return subsetReprs(reprsA, reprsB);
 }
 
-function subsetReprs(reprsA: Repr[], reprsB: Repr[]): boolean {
+function subsetReprs(reprsA: IReprs, reprsB: IReprs): boolean {
   loop: for (let indexB = 0; indexB < reprsB.length; ++indexB) {
     const reprB = reprsB[indexB];
     switch (reprB.kind) {
@@ -259,26 +274,26 @@ export function union(textA: string, textB: string): string {
   return serialize(reprs);
 }
 
-function unionRepr(reprA: Repr, reprB: Repr): boolean {
+function unionRepr(reprA: MRepr, reprB: IRepr): boolean {
   if (reprA.kind !== reprB.kind) {
     return false;
   }
 
   switch (reprA.kind) {
     case Kind.Literal: {
-      const same = reprA.text === (reprB as ReprLiteral).text;
+      const same = reprA.text === (reprB as IReprLiteral).text;
       return same;
     }
     case Kind.Range: {
       const unionable =
-        (reprA.min <= (reprB as ReprRange).max + 1 &&
-          reprA.max >= (reprB as ReprRange).min) ||
-        ((reprB as ReprRange).min <= reprA.max + 1 &&
-          (reprB as ReprRange).max >= reprA.min);
+        (reprA.min <= (reprB as IReprRange).max + 1 &&
+          reprA.max >= (reprB as IReprRange).min) ||
+        ((reprB as IReprRange).min <= reprA.max + 1 &&
+          (reprB as IReprRange).max >= reprA.min);
 
       if (unionable) {
-        reprA.min = Math.min(reprA.min, (reprB as ReprRange).min);
-        reprA.max = Math.max(reprA.max, (reprB as ReprRange).max);
+        reprA.min = Math.min(reprA.min, (reprB as IReprRange).min);
+        reprA.max = Math.max(reprA.max, (reprB as IReprRange).max);
       }
 
       return unionable;
@@ -286,14 +301,14 @@ function unionRepr(reprA: Repr, reprB: Repr): boolean {
   }
 }
 
-function unionReprReducer(reprs: Repr[], repr: Repr): Repr[] {
+function unionReprReducer(reprs: MReprs, repr: IRepr): MReprs {
   if (reprs.length === 0 || !unionRepr(reprs[reprs.length - 1], repr)) {
-    reprs.push(repr);
+    reprs.push(cloneRepr(repr));
   }
 
   return reprs;
 }
 
-function unionReprs(reprs: Repr[]): Repr[] {
+function unionReprs(reprs: MReprs): MReprs {
   return reprs.sort(compare).reduce(unionReprReducer, []);
 }
