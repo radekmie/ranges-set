@@ -192,8 +192,18 @@ export function normalize(text: string): string {
   return serialize(reprs);
 }
 
-function parse(text: string): MReprs {
-  return unionReprs(text.split(',').filter(Boolean).map(parseOne));
+export function parse(text: string): MReprs {
+  const reprs: MReprs = [];
+  const chunks = text.split(',');
+  for (let index = 0; index < chunks.length; ++index) {
+    const chunk = chunks[index];
+    if (chunk) {
+      const repr = parseOne(chunk);
+      unionReprs(reprs, repr);
+    }
+  }
+
+  return reprs;
 }
 
 function parseOne(text: string): MRepr {
@@ -261,7 +271,7 @@ function subsetReprs(reprsA: IReprs, reprsB: IReprs): boolean {
 }
 
 export function union(textA: string, textB: string): string {
-  const reprs = parse(textA + ',' + textB);
+  const reprs = parse(`${textA},${textB}`);
   return serialize(reprs);
 }
 
@@ -292,14 +302,37 @@ function unionRepr(reprA: MRepr, reprB: IRepr): boolean {
   }
 }
 
-function unionReprReducer(reprs: MReprs, repr: MRepr): MReprs {
-  if (reprs.length === 0 || !unionRepr(reprs[reprs.length - 1], repr)) {
-    reprs.push(repr);
+function unionReprs(reprs: MReprs, repr: MRepr): void {
+  let low = 0;
+  let high = reprs.length;
+  while (low < high) {
+    // eslint-disable-next-line no-bitwise
+    const middle = (low + high) >>> 1;
+    const result = compare(repr, reprs[middle]);
+    if (result === 0) {
+      return;
+    }
+
+    if (result < 0) {
+      high = middle;
+    } else {
+      low = middle + 1;
+    }
   }
 
-  return reprs;
+  if (!unionReprsAt(reprs, repr, low) && !unionReprsAt(reprs, repr, low + 1)) {
+    reprs.splice(low, 0, repr);
+  }
 }
 
-function unionReprs(reprs: MReprs): MReprs {
-  return reprs.sort(compare).reduce(unionReprReducer, []);
+function unionReprsAt(reprs: MReprs, repr: IRepr, index: number): boolean {
+  if (index && index <= reprs.length && unionRepr(reprs[index - 1], repr)) {
+    while (index < reprs.length && unionRepr(reprs[index - 1], reprs[index])) {
+      reprs.splice(index, 1);
+    }
+
+    return true;
+  }
+
+  return false;
 }
