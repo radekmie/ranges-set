@@ -192,7 +192,7 @@ export function normalize(text: string): string {
   return serialize(reprs);
 }
 
-export function parse(text: string): MReprs {
+function parse(text: string): MReprs {
   const reprs: MReprs = [];
   const chunks = text.split(',');
   for (let index = 0; index < chunks.length; ++index) {
