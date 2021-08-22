@@ -57,7 +57,13 @@
   },
   "minify": {
     "compress": {
+      "hoist_vars": true,
       "reduce_funcs": false
+    },
+    "mangle": {
+      "properties": {
+        "regex": "^_"
+      }
     }
   }
 }
