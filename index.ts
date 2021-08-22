@@ -43,7 +43,7 @@ export function difference(textA: string, textB: string): string {
   return serialize(reprs);
 }
 
-// eslint-disable-next-line complexity
+// eslint-disable-next-line complexity -- This function IS complex.
 function differenceReprs(reprsA: MReprs, reprsB: IReprs): MReprs {
   const reprs: MReprs = [];
   loop: for (let indexA = 0; indexA < reprsA.length; ++indexA) {
@@ -308,7 +308,7 @@ function unionReprs(reprs: MReprs, repr: MRepr): void {
   let low = 0;
   let high = reprs.length;
   while (low < high) {
-    // eslint-disable-next-line no-bitwise
+    // eslint-disable-next-line no-bitwise -- This is much faster than Math.floor.
     const middle = (low + high) >>> 1;
     const result = compare(repr, reprs[middle]);
     if (!result) {
