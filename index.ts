@@ -216,7 +216,7 @@ function parseOne(text: string): MRepr {
     return { _kind: Kind.Range, _min: +rangeMatch[1], _max: +rangeMatch[2] };
   }
 
-  return { _kind: Kind.Literal, _text: text };
+  return { _kind: Kind.Literal, _text: text.trim() };
 }
 
 function serialize(reprs: IReprs): string {

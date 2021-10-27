@@ -60,6 +60,7 @@ test2(difference, [
 
 test2(equal, [
   ['1', '1', true],
+  ['1', ' 1 ', true],
   ['1', '1-2', false],
   ['1', '2', false],
   ['1', '2-100', false],
@@ -67,6 +68,7 @@ test2(equal, [
   ['1,5', '1-5', false],
   ['1-2', '1', false],
   ['1-2', '1-2', true],
+  ['1-2', ' 1 - 2 ', true],
   ['1-2', '2', false],
   ['1-2,3,4-5', '1-5', true],
   ['1-2,4-5', '1-5', false],
@@ -83,7 +85,9 @@ test2(equal, [
   ['2-4', '1-3', false],
   ['3', '1', false],
   ['a', 'a', true],
+  ['a', ' a ', true],
   ['a', 'b', false],
+  ['a,1', ' a , 1 ', true],
   ['a,1', 'b,1', false],
   ['a,1', 'b,2', false],
   ['b', 'a', false],
