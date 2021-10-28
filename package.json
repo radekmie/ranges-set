@@ -24,6 +24,7 @@
   ],
   "scripts": {
     "build": "microbundle --format cjs,es,modern",
+    "clean": "rm -f index.{d.ts,{js,m{odern,odule}.js}{,.map}}",
     "coverage": "nyc --reporter lcov --reporter text npm test",
     "lint": "eslint --ignore-path .gitignore .",
     "test": "ava"
