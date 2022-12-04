@@ -5,21 +5,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 16.x]
+        node-version: [14.x, 16.x, 18.x]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v3.1.0
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2.4.0
+        uses: actions/setup-node@v3.5.1
         with:
           cache: npm
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
       - name: Install
-        run: npm install -g npm@7 && npm ci
+        run: npm install -g npm@9 && npm ci
       - name: Lint
         run: npm run lint
       - name: Test
         run: npm run coverage
       - name: Report coverage
-        uses: codecov/codecov-action@v1.2.1
+        uses: codecov/codecov-action@v3.1.1
