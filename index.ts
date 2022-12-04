@@ -13,8 +13,8 @@ type MReprs = MRepr[];
 type MReprLiteral = { _kind: Kind.Literal; _text: string };
 type MReprRange = { _kind: Kind.Range; _min: number; _max: number };
 
-const numberPattern = /^\s*(?:0|[1-9]\d*)\s*$/;
-const rangePattern = /^\s*(0|[1-9]\d*)\s*-\s*(0|[1-9]\d*)\s*$/;
+const numberPattern = /^(?:0|[1-9]\d*)$/;
+const rangePattern = /^(0|[1-9]\d*)\s*-\s*(0|[1-9]\d*)$/;
 
 function compare(reprA: IRepr, reprB: IRepr): number {
   if (reprA._kind !== reprB._kind) {
@@ -196,7 +196,7 @@ function parse(text: string): MReprs {
   const reprs: MReprs = [];
   const chunks = text.split(',');
   for (let index = 0; index < chunks.length; ++index) {
-    const chunk = chunks[index];
+    const chunk = chunks[index].trim();
     if (chunk) {
       const repr = parseOne(chunk);
       unionReprs(reprs, repr);
@@ -208,7 +208,8 @@ function parse(text: string): MReprs {
 
 function parseOne(text: string): MRepr {
   if (numberPattern.test(text)) {
-    return { _kind: Kind.Range, _min: +text, _max: +text };
+    const number = +text;
+    return { _kind: Kind.Range, _min: number, _max: number };
   }
 
   const rangeMatch = rangePattern.exec(text);
@@ -216,7 +217,7 @@ function parseOne(text: string): MRepr {
     return { _kind: Kind.Range, _min: +rangeMatch[1], _max: +rangeMatch[2] };
   }
 
-  return { _kind: Kind.Literal, _text: text.trim() };
+  return { _kind: Kind.Literal, _text: text };
 }
 
 function serialize(reprs: IReprs): string {
