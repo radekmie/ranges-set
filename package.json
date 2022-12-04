@@ -30,11 +30,11 @@
     "test": "ava"
   },
   "devDependencies": {
-    "ava": "3.15.0",
-    "eslint-config-vazco": "6.2.0",
-    "microbundle": "0.13.3",
+    "ava": "5.1.0",
+    "eslint-config-vazco": "7.1.0",
+    "microbundle": "0.15.1",
     "nyc": "15.1.0",
-    "ts-node": "10.2.1"
+    "ts-node": "10.9.1"
   },
   "ava": {
     "extensions": [
