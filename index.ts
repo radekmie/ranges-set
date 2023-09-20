@@ -214,7 +214,9 @@ function parseOne(text: string): MRepr {
 
   const rangeMatch = rangePattern.exec(text);
   if (rangeMatch) {
-    return { _kind: Kind.Range, _min: +rangeMatch[1], _max: +rangeMatch[2] };
+    const a = +rangeMatch[1];
+    const b = +rangeMatch[2];
+    return { _kind: Kind.Range, _min: Math.min(a, b), _max: Math.max(a, b) };
   }
 
   return { _kind: Kind.Literal, _text: text };
