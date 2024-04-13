@@ -3,35 +3,30 @@ const enum Kind {
   Range = 1,
 }
 
-type IRepr = IReprLiteral | IReprRange;
-type IReprs = readonly IRepr[];
-type IReprLiteral = Readonly<MReprLiteral>;
-type IReprRange = Readonly<MReprRange>;
-
-type MRepr = MReprLiteral | MReprRange;
-type MReprs = MRepr[];
-type MReprLiteral = { _kind: Kind.Literal; _text: string };
-type MReprRange = { _kind: Kind.Range; _min: number; _max: number };
+type Repr = ReprLiteral | ReprRange;
+type Reprs = Repr[];
+type ReprLiteral = { _kind: Kind.Literal; _text: string };
+type ReprRange = { _kind: Kind.Range; _min: number; _max: number };
 
 const numberPattern = /^(?:0|[1-9]\d*)$/;
 const rangePattern = /^(0|[1-9]\d*)\s*-\s*(0|[1-9]\d*)$/;
 
-function compare(reprA: IRepr, reprB: IRepr): number {
+function compare(reprA: Repr, reprB: Repr): number {
   if (reprA._kind !== reprB._kind) {
     return reprA._kind - reprB._kind;
   }
 
   switch (reprA._kind) {
     case Kind.Literal:
-      return reprA._text >= (reprB as IReprLiteral)._text
-        ? reprA._text > (reprB as IReprLiteral)._text
+      return reprA._text >= (reprB as ReprLiteral)._text
+        ? reprA._text > (reprB as ReprLiteral)._text
           ? 1
           : 0
         : -1;
     case Kind.Range:
       return (
-        reprA._min - (reprB as IReprRange)._min ||
-        reprA._max - (reprB as IReprRange)._max
+        reprA._min - (reprB as ReprRange)._min ||
+        reprA._max - (reprB as ReprRange)._max
       );
   }
 }
@@ -44,8 +39,8 @@ export function difference(textA: string, textB: string): string {
 }
 
 // eslint-disable-next-line complexity -- This function IS complex.
-function differenceReprs(reprsA: MReprs, reprsB: IReprs): MReprs {
-  const reprs: MReprs = [];
+function differenceReprs(reprsA: Reprs, reprsB: Reprs): Reprs {
+  const reprs: Reprs = [];
   loop: for (let indexA = 0; indexA < reprsA.length; ++indexA) {
     const reprA = reprsA[indexA];
     switch (reprA._kind) {
@@ -109,7 +104,7 @@ export function equal(textA: string, textB: string): boolean {
   return equalReprs(reprsA, reprsB);
 }
 
-function equalReprs(reprsA: IReprs, reprsB: IReprs): boolean {
+function equalReprs(reprsA: Reprs, reprsB: Reprs): boolean {
   if (reprsA.length !== reprsB.length) {
     return false;
   }
@@ -128,7 +123,7 @@ export function expand(text: string): string[] {
   return expandReprs(reprs);
 }
 
-function expandReprs(reprs: IReprs): string[] {
+function expandReprs(reprs: Reprs): string[] {
   const texts: string[] = [];
   for (let index = 0; index < reprs.length; ++index) {
     const repr = reprs[index];
@@ -155,24 +150,24 @@ export function intersection(textA: string, textB: string): string {
   return serialize(reprs);
 }
 
-function intersectionRepr(reprA: MRepr, reprB: IRepr): MRepr | null {
+function intersectionRepr(reprA: Repr, reprB: Repr): Repr | null {
   if (reprA._kind !== reprB._kind) {
     return null;
   }
 
   switch (reprA._kind) {
     case Kind.Literal:
-      return reprA._text === (reprB as IReprLiteral)._text ? reprA : null;
+      return reprA._text === (reprB as ReprLiteral)._text ? reprA : null;
     case Kind.Range: {
-      const min = Math.max(reprA._min, (reprB as IReprRange)._min);
-      const max = Math.min(reprA._max, (reprB as IReprRange)._max);
+      const min = Math.max(reprA._min, (reprB as ReprRange)._min);
+      const max = Math.min(reprA._max, (reprB as ReprRange)._max);
       return min > max ? null : { _kind: Kind.Range, _min: min, _max: max };
     }
   }
 }
 
-function intersectionReprs(reprsA: MReprs, reprsB: IReprs): MReprs {
-  const reprs: MReprs = [];
+function intersectionReprs(reprsA: Reprs, reprsB: Reprs): Reprs {
+  const reprs: Reprs = [];
   for (let indexA = 0; indexA < reprsA.length; ++indexA) {
     const reprA = reprsA[indexA];
     for (let indexB = 0; indexB < reprsB.length; ++indexB) {
@@ -192,8 +187,8 @@ export function normalize(text: string): string {
   return serialize(reprs);
 }
 
-function parse(text: string): MReprs {
-  const reprs: MReprs = [];
+function parse(text: string): Reprs {
+  const reprs: Reprs = [];
   const chunks = text.split(',');
   for (let index = 0; index < chunks.length; ++index) {
     const chunk = chunks[index].trim();
@@ -206,7 +201,7 @@ function parse(text: string): MReprs {
   return reprs;
 }
 
-function parseOne(text: string): MRepr {
+function parseOne(text: string): Repr {
   if (numberPattern.test(text)) {
     const number = +text;
     return { _kind: Kind.Range, _min: number, _max: number };
@@ -222,11 +217,11 @@ function parseOne(text: string): MRepr {
   return { _kind: Kind.Literal, _text: text };
 }
 
-function serialize(reprs: IReprs): string {
+function serialize(reprs: Reprs): string {
   return reprs.map(serializeOne).join();
 }
 
-function serializeOne(repr: IRepr): string {
+function serializeOne(repr: Repr): string {
   switch (repr._kind) {
     case Kind.Literal:
       return repr._text;
@@ -243,7 +238,7 @@ export function subset(textA: string, textB: string): boolean {
   return subsetReprs(reprsA, reprsB);
 }
 
-function subsetReprs(reprsA: IReprs, reprsB: IReprs): boolean {
+function subsetReprs(reprsA: Reprs, reprsB: Reprs): boolean {
   loop: for (let indexB = 0; indexB < reprsB.length; ++indexB) {
     const reprB = reprsB[indexB];
     switch (reprB._kind) {
@@ -280,26 +275,26 @@ export function union(textA: string, textB: string): string {
   return serialize(reprs);
 }
 
-function unionRepr(reprA: MRepr, reprB: IRepr): boolean {
+function unionRepr(reprA: Repr, reprB: Repr): boolean {
   if (reprA._kind !== reprB._kind) {
     return false;
   }
 
   switch (reprA._kind) {
     case Kind.Literal: {
-      const same = reprA._text === (reprB as IReprLiteral)._text;
+      const same = reprA._text === (reprB as ReprLiteral)._text;
       return same;
     }
     case Kind.Range: {
       const unionable =
-        (reprA._min <= (reprB as IReprRange)._max + 1 &&
-          reprA._max >= (reprB as IReprRange)._min) ||
-        ((reprB as IReprRange)._min <= reprA._max + 1 &&
-          (reprB as IReprRange)._max >= reprA._min);
+        (reprA._min <= (reprB as ReprRange)._max + 1 &&
+          reprA._max >= (reprB as ReprRange)._min) ||
+        ((reprB as ReprRange)._min <= reprA._max + 1 &&
+          (reprB as ReprRange)._max >= reprA._min);
 
       if (unionable) {
-        reprA._min = Math.min(reprA._min, (reprB as IReprRange)._min);
-        reprA._max = Math.max(reprA._max, (reprB as IReprRange)._max);
+        reprA._min = Math.min(reprA._min, (reprB as ReprRange)._min);
+        reprA._max = Math.max(reprA._max, (reprB as ReprRange)._max);
       }
 
       return unionable;
@@ -307,7 +302,7 @@ function unionRepr(reprA: MRepr, reprB: IRepr): boolean {
   }
 }
 
-function unionReprs(reprs: MReprs, repr: MRepr): void {
+function unionReprs(reprs: Reprs, repr: Repr): void {
   let low = 0;
   let high = reprs.length;
   while (low < high) {
@@ -330,7 +325,7 @@ function unionReprs(reprs: MReprs, repr: MRepr): void {
   }
 }
 
-function unionReprsAt(reprs: MReprs, repr: IRepr, index: number): boolean {
+function unionReprsAt(reprs: Reprs, repr: Repr, index: number): boolean {
   if (index && index <= reprs.length && unionRepr(reprs[index - 1], repr)) {
     while (index < reprs.length && unionRepr(reprs[index - 1], reprs[index])) {
       reprs.splice(index, 1);
