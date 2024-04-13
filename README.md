@@ -39,3 +39,24 @@ function normalize(text: string): string;
 function subset(textA: string, textB: string): boolean;
 function union(textA: string, textB: string): string;
 ```
+
+On top of that, all internal functions are exported with a prefix (`_`). It allows you to achieve the best performance, as you can operate on the internal representation of the parsed objects instead of strings.
+
+```ts
+function _compare(reprA: Repr, reprB: Repr): number;
+function _createLiteral(text: string): Repr;
+function _createRange(min: number, max: number): Repr;
+function _differenceReprs(reprsA: Repr[], reprsB: Repr[]): Repr[];
+function _equalReprs(reprsA: Repr[], reprsB: Repr[]): boolean;
+function _expandReprs(reprs: Repr[]): string[];
+function _intersectionRepr(reprA: Repr, reprB: Repr): Repr | null;
+function _intersectionReprs(reprsA: Repr[], reprsB: Repr[]): Repr[];
+function _parse(text: string): Repr[];
+function _parseOne(text: string): Repr;
+function _serialize(reprs: Repr[]): string;
+function _serializeOne(repr: Repr): string;
+function _subsetReprs(reprsA: Repr[], reprsB: Repr[]): boolean;
+function _unionRepr(reprA: Repr, reprB: Repr): boolean;
+function _unionReprs(reprs: Repr[], repr: Repr): void;
+function _unionReprsAt(reprs: Repr[], repr: Repr, index: number): boolean;
+```
