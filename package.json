@@ -30,11 +30,11 @@
     "test": "ava"
   },
   "devDependencies": {
-    "ava": "5.1.0",
-    "eslint-config-vazco": "7.1.0",
+    "ava": "6.1.2",
+    "eslint-config-vazco": "7.4.0",
     "microbundle": "0.15.1",
     "nyc": "15.1.0",
-    "ts-node": "10.9.1"
+    "ts-node": "10.9.2"
   },
   "ava": {
     "extensions": [
@@ -52,7 +52,7 @@
     },
     "settings": {
       "react": {
-        "version": "none"
+        "version": "18"
       }
     }
   },
